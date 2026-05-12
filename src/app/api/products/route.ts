@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Product } from '@/lib/models/Product';
 import { User } from '@/lib/models/User';
+import { Category } from '@/lib/models/Category';
 import { verifyAuthToken } from '@/lib/firebase/admin-actions';
 
 // GET /api/products — public listing with filters

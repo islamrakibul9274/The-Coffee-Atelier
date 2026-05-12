@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Review } from '@/lib/models/Engagement';
+import { Product } from '@/lib/models/Product'; // Required for populate
 import { User } from '@/lib/models/User';
 import { verifyAuthToken } from '@/lib/firebase/admin-actions';
 
