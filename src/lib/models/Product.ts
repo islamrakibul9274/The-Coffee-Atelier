@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import './Category'; // Ensure the Category schema is registered
 
 export interface IProduct extends Document {
   name: string;
