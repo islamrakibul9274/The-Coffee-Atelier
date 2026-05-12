@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0F0D0C;
+  --foreground: #F5F5F5;
+  --card: #161412;
+  --card-border: #262320;
+  --accent-gold: #C0A080;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), sans-serif;
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), serif;
+    @apply tracking-tight;
+  }
+}
+
+/* Custom Scrollbar for The Coffee Atelier */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #0F0D0C;
+}
+::-webkit-scrollbar-thumb {
+  background: #C0A080;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E5C9A9;
+}
+
+/* Glassmorphism utility */
+.glass-nav {
+  @apply bg-[#0F0D0C]/70 backdrop-blur-md border-b border-[#C0A080]/10;
+}
+
+/* smooth-fade utility */
+.smooth-fade {
+  @apply transition-all duration-700 ease-out;
+}
+
+/* Artisan Toast Enhancements */
+.atelier-toast {
+  max-width: 450px !important;
+  @apply backdrop-blur-xl bg-[#161412]/95 !important;
+}
+
+/* Add a boutique prefix to every toast automatically */
+.atelier-toast [role="status"] {
+  @apply flex flex-col items-start gap-1 !important;
+}
+
+.atelier-toast [role="status"]::before {
+  content: 'ATELIER STATUS UPDATE';
+  @apply text-[7px] font-bold tracking-[0.6em] text-accent-gold/50 uppercase block mb-1;
+}
+
+/* Style the message itself */
+.atelier-toast [role="status"] > div {
+  @apply text-[10px] font-bold tracking-[0.2em] uppercase text-foreground leading-relaxed !important;
+}
+
+/* no-scrollbar utility */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Native select dropdown styling — force dark theme */
+select {
+  color-scheme: dark !important;
+  background-color: #1A1A1A !important;
+  color: #F5F5F5 !important;
+  outline: none !important;
+}
+
+select:focus {
+  border-color: #C0A080 !important;
+  box-shadow: 0 0 0 1px #C0A080 !important;
+}
+
+select option {
+  background-color: #1A1A1A !important;
+  color: #F5F5F5 !important;
+  padding: 12px !important;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #2D241E !important;
+  color: #C0A080 !important;
+}
+
+

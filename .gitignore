@@ -1,0 +1,10 @@
+# Internal Agent Documentation
+GEMINI.md
+REASONING.md
+TODO.md
+.env.local
+node_modules
+.next
+.geminiignore
+TODO_PHASE_11_12.md
+tsconfig.tsbuildinfo
