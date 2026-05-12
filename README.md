@@ -1,93 +1,123 @@
-# ☕ Obsidian Coffee Ordering Platform
+# ☕ The Coffee Atelier - Boutique E-Commerce Ecosystem
 
-A premium, real-time coffee ordering experience built with Next.js 14, MongoDB, Firebase, and Stripe.
+A high-performance, full-stack **Next.js 15** application engineered for the modern specialty coffee connoisseur. The Coffee Atelier offers a premium digital experience to discover, purchase, and manage artisanal coffee collections. The project features a refined **Mochar-Inspired** architecture, utilizing a specialized dark palette of Deep Espresso, Warm Charcoal, and Cream, optimized for hardware efficiency and a high-end boutique user experience.
 
-## 🚀 Features
+## 🚀 Live Links
 
-- **Authentication**: Google Sign-In via Firebase Auth + MongoDB user synchronization.
-- **Role-Based Access**: Specialized dashboards for Customers, Managers, and Admins.
-- **Real-Time Infrastructure**: Live banner updates, flash discounts with countdowns, and order tracking via Firebase Realtime DB.
-- **E-Commerce Flow**: Advanced product grid, slide-out cart, and secure Stripe Checkout integration.
-- **Admin Suite**: Full user management, banner scheduling, announcement broadcasting, and global order fulfillment.
-- **Search & Discovery**: Fuse.js powered search modal for products and categories.
-- **Engagement**: Star-rating review system and "Notify Me" for coming soon products.
+* **Production Application (Vercel):** [https://the-coffee-atelier-gb22.vercel.app](https://the-coffee-atelier-gb22.vercel.app)
+* **GitHub Repository:** [The-Coffee-Atelier](https://github.com/islamrakibul9274/The-Coffee-Atelier)
 
-## 🛠️ Tech Stack
+---
 
-- **Frontend**: Next.js 14 (App Router), Tailwind CSS, Framer Motion, Lucide React.
-- **State Management**: Zustand.
-- **Backend**: Next.js API Routes (Node.js).
-- **Database**: MongoDB (Mongoose).
-- **Real-Time/Auth**: Firebase (Client & Admin SDK).
-- **Payments**: Stripe Checkout.
-- **Images**: Cloudinary.
+## ✨ Key Features
 
-## 📦 Getting Started
+### ☕ Connoisseur Features
 
-### 1. Clone the repository
+* **Boutique Discovery:** Advanced search and real-time filtering by roast profile, category, and flavor notes.
+* **Premium Product Suite:** Detailed coffee listings featuring high-fidelity imagery, tasting notes, and brewing recommendations.
+* **Seamless Checkout:** Fully integrated **Stripe** payment gateway with secure processing and real-time validation.
+* **Order Tracking:** Personalized user profiles featuring detailed order history and live shipping status updates.
+
+### 🛠️ Manager Dashboard Features
+
+* **Inventory Control:** Dedicated suite for adding, editing, and managing coffee origins, stock levels, and product metadata.
+* **Promotional Engine:** Real-time management of active banners and discount codes powered by **Firebase Realtime Database**.
+* **Order Management:** Optimized interface for processing incoming orders, managing fulfillment status (Pending/Packaging/Shipping), and customer communication.
+* **Live Notifications:** Integrated status update system notifying users instantly when their order progress changes.
+
+### 🛡️ Admin "Command Center"
+
+* **User Management:** Granular control over platform users, including role assignments (User, Manager, Admin).
+* **Analytics Dashboard:** Real-time data visualization for platform sales, popular products, and customer engagement metrics.
+* **Security & Stability:** Utilizes **Next.js Middleware** for Role-Based Access Control (RBAC) and Mongoose schema pre-registration to ensure architectural stability in serverless environments.
+* **Webhook Reliability:** Robust **Stripe Webhook** pipeline to ensure database consistency for payment events and automatic order creation.
+
+---
+
+## 💻 Tech Stack
+
+**Frontend & Framework:**
+
+* **Next.js 15 (App Router):** Utilizing the latest React features and Server Components for peak performance.
+* **Tailwind CSS:** Custom design system focusing on "Mochar Aesthetics" with precise dark-mode and transparency optimizations.
+* **Framer Motion:** High-performance micro-interactions, boutique-style transitions, and staggered reveals.
+* **Lucide React:** Consistent, professional iconography tailored for an elegant e-commerce interface.
+
+**Backend & Database:**
+
+* **MongoDB Atlas:** Scalable cloud database for user data, product catalogs, and order history.
+* **Mongoose:** Structured ODM for complex schema relationships (Products/Categories) and efficient validation.
+* **Firebase (RTDB & Auth):** Real-time layer for secure authentication and instant UI updates for promotional content.
+* **Stripe API:** Industry-standard payment processing with custom webhook handlers for production reliability.
+
+---
+
+## 🛠️ Local Setup Instructions
+
+### 1. Prerequisites
+
+* Node.js (v18 or higher)
+* MongoDB Atlas account
+* Firebase Project and Stripe account
+
+### 2. Clone the Repository
+
 ```bash
-git clone <repository-url>
-cd coffee-shop
+git clone https://github.com/rumel9274-6063/the-coffee-atelier.git
+cd the-coffee-atelier
+
 ```
 
-### 2. Install dependencies
+### 3. Install Dependencies
+
 ```bash
 npm install
+
 ```
 
-### 3. Environment Variables
-Create a `.env.local` file in the root directory and populate it with your credentials:
+### 4. Environment Configuration
+
+Create a `.env.local` file in the root directory:
 
 ```env
-# MongoDB
-MONGODB_URI="mongodb+srv://..."
+# Database
+MONGODB_URI=your_mongodb_connection_string
 
-# Firebase Client
-NEXT_PUBLIC_FIREBASE_API_KEY="..."
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="..."
-NEXT_PUBLIC_FIREBASE_DATABASE_URL="..."
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="..."
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="..."
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
-NEXT_PUBLIC_FIREBASE_APP_ID="..."
-
-# Firebase Admin SDK
-FIREBASE_PROJECT_ID="..."
-FIREBASE_CLIENT_EMAIL="..."
-FIREBASE_PRIVATE_KEY="..."
+# Firebase (Client & Server)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_PRIVATE_KEY=your_private_key
+FIREBASE_CLIENT_EMAIL=your_client_email
 
 # Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="..."
-STRIPE_SECRET_KEY="..."
-STRIPE_WEBHOOK_SECRET="..."
+STRIPE_SECRET_KEY=your_stripe_secret
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_publishable_key
 
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="..."
-CLOUDINARY_API_KEY="..."
-CLOUDINARY_API_SECRET="..."
 ```
 
-### 4. Run the development server
+### 5. Build and Start
+
 ```bash
-npm run dev
+# Optimized for 8GB RAM MacBook Air devices
+npm run build
+npm start
+
 ```
 
-## 💳 Testing Payments
+---
 
-Use the following Stripe test card details in demo mode:
+## ⚙️ Production Architecture
 
-| Detail | Value |
-|--------|-------|
-| Card Number | `4242 4242 4242 4242` |
-| Expiry Date | Any future date (e.g., `12/30`) |
-| CVC | `123` |
-| ZIP Code | Any valid ZIP (e.g., `90210`) |
+The Coffee Atelier is optimized for **Vercel** deployment with global edge distribution. To ensure 100% stability, it utilizes **Mongoose Schema Pre-registration** to prevent race conditions and **Dynamic Server Rendering** for authenticated administrative routes.
 
-## 🔐 Role Testing
+---
 
-- **Customer**: Default role on first sign-in.
-- **Manager/Admin**: Use the Admin Dashboard (`/admin/users`) to promote a user to `manager` or manually update the `role` field in your MongoDB `users` collection.
+## 👤 Author
 
-## 📄 License
+**Rakibul Islam Rumel**
 
-This project is for demonstration purposes under the Obsidian Coffee brand.
+* **GitHub:** [@islamrakibul9274](https://github.com/islamrakibul9274)
+* **Project:** [The Coffee Atelier Production](https://the-coffee-atelier-gb22.vercel.app)
+
+---
