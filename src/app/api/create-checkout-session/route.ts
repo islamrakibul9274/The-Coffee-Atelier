@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
     const products = await Product.find({ _id: { $in: items.map(item => item.id) } }).lean();
     const offers = await Discount.find({ isActive: true }).lean();
     let savings = 0;
+    let subtotal = 0;
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     for (const item of items) {
       const product = products.find(p => p._id.toString() === item.id);
@@ -27,9 +28,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `${product?.name || 'An item'} is no longer available in that quantity. Please update your cart.` }, { status: 409 });
       }
       const cents = Math.round(product.basePrice * 100);
-      if (!Number.isSafeInteger(cents) || cents < 50) {
+      if (!Number.isSafeInteger(cents) || cents < 0) {
         return NextResponse.json({ error: 'An item is unavailable for checkout. Please contact the shop.' }, { status: 409 });
       }
+      subtotal += cents * item.quantity;
       savings += offerSavings(cents, item.quantity, item.id, product.category.toString(), offers);
       lineItems.push({
         price_data: { currency: 'usd', unit_amount: cents, product_data: {
@@ -39,6 +41,9 @@ export async function POST(request: NextRequest) {
         } },
         quantity: item.quantity,
       });
+    }
+    if (subtotal - savings > 0 && subtotal - savings < 50) {
+      return NextResponse.json({ error: 'Stripe requires a total of at least $0.50. Please add another item to your cart.' }, { status: 400 });
     }
     const origin = request.nextUrl.origin;
     const stripe = getStripe();

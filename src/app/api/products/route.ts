@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (status) filter.status = status;
     if (search) filter.name = { $regex: search.slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
 
-    let query = Product.find(filter).populate('category', 'name slug').limit(limit);
+    let query = Product.find(filter).populate({ path: 'category', model: Category, select: 'name slug' }).limit(limit);
 
     if (sort === 'price_asc') query = query.sort({ basePrice: 1 });
     else if (sort === 'price_desc') query = query.sort({ basePrice: -1 });
