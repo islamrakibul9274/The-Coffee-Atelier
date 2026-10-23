@@ -8,7 +8,7 @@ export interface IOrderItem {
 }
 
 export interface IOrderTimeline {
-  status: 'Pending' | 'Packaging' | 'Delivering' | 'Delivered';
+  status: 'Pending' | 'Packaging' | 'Delivering' | 'Delivered' | 'Cancelled';
   timestamp: Date;
 }
 
@@ -19,9 +19,10 @@ export interface IOrder extends Document {
   discountTotal: number;
   finalTotal: number;
   status: 'Pending' | 'Paid' | 'Failed';
-  deliveryStatus: 'Pending' | 'Packaging' | 'Delivering' | 'Delivered';
+  deliveryStatus: 'Pending' | 'Packaging' | 'Delivering' | 'Delivered' | 'Cancelled';
   timeline: IOrderTimeline[];
   stripeSessionId?: string;
+  fulfillmentNeedsReview: boolean;
   createdAt: Date;
 }
 
@@ -33,7 +34,7 @@ const OrderItemSchema = new Schema({
 });
 
 const OrderTimelineSchema = new Schema({
-  status: { type: String, enum: ['Pending', 'Packaging', 'Delivering', 'Delivered'], required: true },
+  status: { type: String, enum: ['Pending', 'Packaging', 'Delivering', 'Delivered', 'Cancelled'], required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
@@ -44,9 +45,10 @@ const OrderSchema: Schema = new Schema({
   discountTotal: { type: Number, default: 0 },
   finalTotal: { type: Number, required: true },
   status: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
-  deliveryStatus: { type: String, enum: ['Pending', 'Packaging', 'Delivering', 'Delivered'], default: 'Pending' },
+  deliveryStatus: { type: String, enum: ['Pending', 'Packaging', 'Delivering', 'Delivered', 'Cancelled'], default: 'Pending' },
   timeline: [OrderTimelineSchema],
   stripeSessionId: { type: String },
+  fulfillmentNeedsReview: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

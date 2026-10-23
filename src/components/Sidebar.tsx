@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingBag, 
-  Users, 
-  ImageIcon, 
-  Tags, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Users,
+  ImageIcon,
+  Tags,
   Megaphone,
   User as UserIcon,
   LogOut,
@@ -22,8 +22,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
 
-  const isDashboard = pathname.startsWith("/admin") || 
-                      pathname.startsWith("/manager") || 
+  const isDashboard = pathname.startsWith("/admin") ||
+                      pathname.startsWith("/manager") ||
                       pathname.startsWith("/profile");
 
   if (!isDashboard || !user) return null;
@@ -34,13 +34,13 @@ export default function Sidebar() {
     { label: "Banners", href: "/admin/banners", icon: ImageIcon },
     { label: "Offers", href: "/admin/discounts", icon: Tags },
     { label: "Alerts", href: "/admin/announcements", icon: Megaphone },
+    { label: "Inventory", href: "/manager/products", icon: Package },
     { label: "Global Orders", href: "/admin/orders", icon: ShoppingBag },
   ];
 
   const managerLinks = [
     { label: "Inventory", href: "/manager/products", icon: Package },
     { label: "Fulfillment", href: "/manager/orders", icon: ShoppingBag },
-    { label: "Promotions", href: "/manager/discounts", icon: Tags },
   ];
 
   const personalLinks = [
@@ -49,7 +49,7 @@ export default function Sidebar() {
     { label: "My Reviews", href: "/profile/reviews", icon: Megaphone },
   ];
 
-  const managementLinks = user.role === "admin" ? adminLinks : 
+  const managementLinks = user.role === "admin" ? adminLinks :
                          user.role === "manager" ? managerLinks : [];
 
   return (
@@ -69,8 +69,8 @@ export default function Sidebar() {
               const Icon = link.icon;
               const isActive = pathname === link.href;
               return (
-                <Link 
-                  key={link.href} 
+                <Link
+                  key={link.href} aria-current={isActive ? "page" : undefined}
                   href={link.href}
                   className={`flex items-center justify-between py-3 group transition-all duration-300 ${
                     isActive ? "text-accent-gold" : "text-text-muted hover:text-foreground"
@@ -95,8 +95,8 @@ export default function Sidebar() {
             const Icon = link.icon;
             const isActive = pathname === link.href;
             return (
-              <Link 
-                key={link.href} 
+              <Link
+                key={link.href} aria-current={isActive ? "page" : undefined}
                 href={link.href}
                 className={`flex items-center justify-between py-3 group transition-all duration-300 ${
                   isActive ? "text-accent-gold" : "text-text-muted hover:text-foreground"
@@ -114,7 +114,7 @@ export default function Sidebar() {
       </div>
 
       <div className="mt-auto py-12 border-t border-cardBorder">
-        <button 
+        <button
           onClick={logout}
           className="flex items-center gap-4 text-text-muted hover:text-red-400 transition-colors group w-full"
         >

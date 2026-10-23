@@ -8,3 +8,6 @@ node_modules
 .geminiignore
 TODO_PHASE_11_12.md
 tsconfig.tsbuildinfo
+.vercel
+.env*
+!.env.example

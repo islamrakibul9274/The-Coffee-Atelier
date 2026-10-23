@@ -49,7 +49,7 @@ export default function NotificationsDropdown() {
         if (data.announcement && !currentAnnouncement) {
           currentAnnouncement = {
             ...data.announcement,
-            timestamp: new Date(data.announcement.createdAt).getTime()
+            timestamp: data.announcement.timestamp || Date.now()
           };
           updateList();
         }
@@ -72,7 +72,7 @@ export default function NotificationsDropdown() {
         currentAnnouncement = null;
       }
       updateList();
-    });
+    }, () => { /* Keep metadata fallback when realtime is unavailable. */ });
 
     let unsubOrders: (() => void) | null = null;
     if (orderNotificationsRef) {
@@ -87,7 +87,7 @@ export default function NotificationsDropdown() {
           currentOrders = [];
         }
         updateList();
-      });
+      }, () => { currentOrders = []; updateList(); });
     }
 
     return () => {

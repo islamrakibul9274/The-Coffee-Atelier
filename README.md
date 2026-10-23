@@ -77,7 +77,13 @@ npm install
 
 ### 4. Environment Configuration
 
-Create a `.env.local` file in the root directory:
+Copy `.env.example` to `.env.local` and fill in the development credentials. The template includes all Firebase client fields required for startup.
+
+Vercel only downloads readable variables. Sensitive Production/Preview values are returned as `[SENSITIVE]` placeholders, which cannot run the app. Configure Development variables in Vercel and run `npx vercel env pull .env.local`, or obtain development credentials from the service owners.
+
+Start the local server with `npm run dev`, then open http://localhost:3000.
+
+Example configuration (see `.env.example` for the complete list):
 
 ```env
 # Database
@@ -121,3 +127,13 @@ The Coffee Atelier is optimized for **Vercel** deployment with global edge distr
 * **Project:** [The Coffee Atelier Production](https://the-coffee-atelier-gb22.vercel.app)
 
 ---
+
+## Development checks and payment setup
+
+Run `npm run lint`, `npx tsc --noEmit`, and `npm test` before deploying. Production builds run on Vercel with the configured environment values. The project uses Next.js 15 with patched PostCSS, gRPC, and selector-parser overrides for transitive security fixes. The `jwks-rsa` dependency uses JOSE 5 to keep Firebase Admin compatible with Vercel’s CommonJS function loader.
+
+Set `STRIPE_WEBHOOK_SECRET` for the Stripe endpoint `/api/stripe-webhook` in Vercel. Unsigned webhooks are rejected. The authenticated checkout return page also verifies payments directly with Stripe. If the signing secret is missing and a buyer closes checkout before returning, webhook fulfillment cannot complete automatically. Use Stripe test credentials for payment testing.
+
+Catalog prices and applicable offers are calculated by the server. Verified checkout sessions are processed transactionally, once per session, for both webhooks and return-page confirmation. This requires MongoDB transactions (supported by MongoDB Atlas). Orders with a stock shortage during payment are retained as paid, marked Pending, and flagged for inventory review in the management screens. Inventory is checked when checkout begins; it is not reserved during the Stripe payment window.
+
+The former public debug, HTTP inventory seed, and mock paid-order paths have been disabled. Customer payment details are collected only by Stripe Checkout.

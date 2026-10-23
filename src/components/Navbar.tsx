@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useCartStore } from "@/store/useCartStore";
 import CartDrawer from "./CartDrawer";
 import SearchModal from "./SearchModal";
+import { useDialog } from "@/hooks/useDialog";
 import NotificationsDropdown from "./NotificationsDropdown";
 
 export default function Navbar() {
@@ -22,6 +23,10 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
 
+  const menuRef = useDialog(isMobileMenuOpen, () => setIsMobileMenuOpen(false));
+
+  useEffect(() => { setIsMobileMenuOpen(false); setIsCartOpen(false); setIsSearchOpen(false); }, [pathname]);
+
   const isDashboard = pathname.startsWith("/admin") ||
                       pathname.startsWith("/manager") ||
                       pathname.startsWith("/profile");
@@ -29,20 +34,21 @@ export default function Navbar() {
   useEffect(() => {
     setHasHydrated(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <>
-      <nav
+      <nav aria-label="Main navigation"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           isDashboard
             ? "bg-background border-b border-cardBorder py-4"
             : isScrolled ? "glass-nav py-4" : "bg-transparent py-8"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
           {/* Left: Nav Links */}
           <div className="hidden lg:flex items-center gap-10">
             <Link
@@ -58,14 +64,14 @@ export default function Navbar() {
 
           {/* Center: Branding */}
           <Link href="/" className="flex flex-col items-center group">
-            <span className="font-serif text-2xl md:text-3xl text-foreground tracking-tighter group-hover:text-accent-gold transition-colors duration-700">
-              THE COFFEE ATELIER
+            <span className="font-serif text-[17px] min-[400px]:text-xl md:text-3xl whitespace-nowrap text-foreground tracking-tighter group-hover:text-accent-gold transition-colors duration-700">
+              THE COFFEE <span className="block sm:inline">ATELIER</span>
             </span>
             <div className="w-12 h-[1px] bg-accent-gold/40 mt-1 transition-all duration-700 group-hover:w-24" />
           </Link>
 
           {/* Right: Icons */}
-          <div className="flex items-center gap-2 md:gap-5">
+          <div className="flex items-center gap-0 sm:gap-2 md:gap-5">
             <button
               onClick={() => setIsSearchOpen(true)}
               className="p-2 text-foreground/80 hover:text-accent-gold transition-colors"
@@ -108,6 +114,8 @@ export default function Navbar() {
             )}
 
             <button
+              aria-label="Open navigation"
+              aria-expanded={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden p-2 text-foreground/80 hover:text-accent-gold transition-colors"
             >
@@ -124,11 +132,12 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[60] bg-background flex flex-col p-8"
+            ref={menuRef} role="dialog" aria-modal="true" aria-label="Navigation" tabIndex={-1}
+            className="fixed inset-0 z-[60] bg-background flex flex-col p-6 overflow-y-auto"
           >
             <div className="flex justify-between items-center mb-16">
               <span className="font-serif text-2xl text-foreground">THE COFFEE ATELIER</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-foreground">
+              <button aria-label="Close navigation" onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-foreground">
                 <X className="w-8 h-8 stroke-[1px]" />
               </button>
             </div>
@@ -147,8 +156,8 @@ export default function Navbar() {
               >
                 Our Narrative
               </Link>
-              <Link href="/profile" className="font-serif text-4xl text-foreground hover:text-accent-gold italic">
-                Member Profile
+              <Link href={user ? "/profile" : "/login"} onClick={() => setIsMobileMenuOpen(false)} className="font-serif text-4xl text-foreground hover:text-accent-gold italic">
+                {user ? "Member Profile" : "Sign In"}
               </Link>
             </div>
           </motion.div>

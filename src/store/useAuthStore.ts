@@ -28,6 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await signOut(auth);
       set({ user: null });
+      document.cookie = 'fbToken=; path=/; max-age=0; SameSite=Strict';
       // Clear cookies by calling a sign-out route if necessary, 
       // but usually Firebase handles the client-side session.
       // Next.js middleware might need a redirect.

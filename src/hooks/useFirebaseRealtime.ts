@@ -9,33 +9,27 @@ export function useActiveBanner() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const bannerRef = ref(database, 'activeBanner');
-    
-    // Fallback: Fetch directly from MongoDB if RTDB is empty/fail
+    const controller = new AbortController();
+    let receivedRealtime = false;
+    let fallback: { imageUrl: string; targetUrl?: string } | null = null;
     const fetchFallback = async () => {
       try {
-        const res = await fetch('/api/site-metadata');
+        const res = await fetch('/api/site-metadata', { signal: controller.signal });
+        if (!res.ok) return;
         const data = await res.json();
-        if (data.banner && !banner) {
-          setBanner(data.banner);
-        }
-      } catch (err) {
-        console.error('Banner Fallback Failed:', err);
-      }
+        fallback = data.banner || null;
+        if (!receivedRealtime) setBanner(fallback);
+      } catch { /* The hero has a static image fallback. */ }
+      finally { if (!controller.signal.aborted) setLoading(false); }
     };
-
     fetchFallback();
-
-    const unsubscribe = onValue(bannerRef, (snapshot) => {
+    const unsubscribe = onValue(ref(database, 'activeBanner'), snapshot => {
       const data = snapshot.val();
-      setBanner(data || null);
+      if (data) { receivedRealtime = true; setBanner(data); }
+      else { receivedRealtime = false; setBanner(fallback); }
       setLoading(false);
-    }, (error) => {
-      console.error("Firebase RTDB Banner Error:", error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }, () => { setLoading(false); });
+    return () => { controller.abort(); unsubscribe(); };
   }, []);
 
   return { banner, loading };

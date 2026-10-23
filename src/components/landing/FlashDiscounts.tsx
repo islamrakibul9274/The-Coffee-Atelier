@@ -1,5 +1,6 @@
 "use client";
 
+import { isOfferActive } from "@/lib/offers";
 import { useActiveDiscounts } from "@/hooks/useFirebaseRealtime";
 import { useEffect, useState } from "react";
 import { Percent } from "lucide-react";
@@ -50,8 +51,10 @@ function CountdownTimer({ endDate }: { endDate: string }) {
 
 export default function FlashDiscounts() {
   const { discounts, loading } = useActiveDiscounts();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const discountList = Object.entries(discounts).filter(
-    ([, d]: [string, any]) => d.endDate && new Date(d.endDate) > new Date()
+    ([, d]: [string, any]) => d.endDate && isOfferActive({ ...d, isActive: d.isActive !== false }, now)
   );
 
   if (loading || discountList.length === 0) return null;

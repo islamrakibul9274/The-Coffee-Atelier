@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 const cards = [
   { label: "Product Inventory", href: "/manager/products", icon: Package, desc: "Add, edit & manage coffee blends" },
   { label: "Order Fulfillment", href: "/manager/orders", icon: ShoppingBag, desc: "Update delivery statuses" },
-  { label: "Local Promotions", href: "/manager/discounts", icon: Tags, desc: "Manage store offers" },
 ];
 
 export default function ManagerDashboard() {

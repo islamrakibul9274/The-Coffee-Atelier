@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Coffee, Tag, ArrowRight } from "lucide-react";
+import { useDialog } from "@/hooks/useDialog";
+import { useRouter } from "next/navigation";
 import Fuse from "fuse.js";
 import Link from "next/link";
 
@@ -20,16 +22,23 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
   const [results, setResults] = useState<SearchResult[]>([]);
   const [fuse, setFuse] = useState<Fuse<SearchResult> | null>(null);
 
+  const router = useRouter();
+  const dialogRef = useDialog(isOpen, onClose);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   useEffect(() => {
     if (!isOpen) return;
 
+    const controller = new AbortController();
+    setQuery(""); setFuse(null); setLoading(true); setError(false);
     const fetchData = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          fetch("/api/products?limit=100"),
-          fetch("/api/categories")
+          fetch("/api/products?limit=500&status=active", { signal: controller.signal }),
+          fetch("/api/categories", { signal: controller.signal })
         ]);
 
+        if (!prodRes.ok || !catRes.ok) throw new Error("Search unavailable");
         const prodData = await prodRes.json();
         const catData = await catRes.json();
 
@@ -54,11 +63,12 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
           threshold: 0.3,
         }));
       } catch (error) {
-        console.error("Search index error:", error);
-      }
+        if (!controller.signal.aborted) setError(true);
+      } finally { if (!controller.signal.aborted) setLoading(false); }
     };
 
     fetchData();
+    return () => controller.abort();
   }, [isOpen]);
 
   useEffect(() => {
@@ -70,13 +80,6 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
     }
   }, [query, fuse]);
 
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [onClose]);
 
   return (
     <AnimatePresence>
@@ -96,6 +99,7 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            ref={dialogRef} role="dialog" aria-modal="true" aria-label="Search the collection" tabIndex={-1}
             className="relative w-full max-w-2xl bg-card border border-cardBorder shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Search Input */}
@@ -103,20 +107,22 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
               <Search className="w-5 h-5 sm:w-6 sm:h-6 text-accent-gold mr-4 sm:mr-8 stroke-[1px]" />
               <input 
                 autoFocus
+                aria-label="Search roasts and collections"
+                onKeyDown={event => { if (event.key === "Enter" && results[0]) { const result = results[0]; router.push(result.type === "product" ? `/product/${result.id}` : `/?category=${result.id}#menu-grid`); onClose(); } }}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="DISCOVER..."
-                className="flex-1 bg-transparent border-none text-foreground placeholder:text-text-muted focus:ring-0 text-xl sm:text-3xl font-serif italic outline-none"
+                className="min-w-0 w-full flex-1 bg-transparent border-none text-foreground placeholder:text-text-muted focus:ring-0 text-xl sm:text-3xl font-serif italic outline-none"
               />
-              <button onClick={onClose} className="p-2 hover:bg-card rounded-full transition-colors">
+              <button aria-label="Close search" onClick={onClose} className="p-2 hover:bg-card rounded-full transition-colors">
                 <X className="w-6 h-6 sm:w-8 sm:h-8 text-foreground stroke-[1px]" />
               </button>
             </div>
 
             {/* Results Area */}
             <div className="max-h-[60vh] overflow-y-auto px-5 sm:px-10 py-6 sm:py-10">
-              {query === "" ? (
+              {loading ? <p role="status" className="py-12 text-center text-text-muted text-sm">Preparing your search…</p> : error ? <p role="alert" className="py-12 text-center text-text-muted text-sm">Search is temporarily unavailable. Please close and try again.</p> : query.trim() === "" ? (
                 <div className="py-24 text-center opacity-40">
                   <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-text-muted italic">Awaiting your inquiry...</span>
                 </div>
@@ -143,7 +149,7 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
                       <div className="flex-1 min-w-0">
                         <p className="font-serif text-lg sm:text-2xl text-foreground group-hover:text-accent-gold transition-colors truncate">{result.name}</p>
                         <p className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-[0.3em] mt-1 sm:mt-2 italic group-hover:text-foreground">
-                          {result.type} {result.price && `• $${result.price.toFixed(2)}`}
+                          {result.type} {result.price !== undefined && `• $${result.price.toFixed(2)}`}
                         </p>
                       </div>
                       <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-accent-gold opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 duration-500" />
@@ -158,7 +164,7 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
             </div>
 
             {/* Footer */}
-            <div className="px-10 py-6 border-t border-cardBorder bg-background flex justify-between items-center">
+            <div className="px-5 sm:px-10 py-6 border-t border-cardBorder bg-background flex justify-between items-center">
               <div className="flex gap-10">
                 <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-text-muted flex items-center">
                   <span className="bg-card border border-cardBorder px-2 py-0.5 mr-3 text-foreground rounded-sm">ESC</span> 

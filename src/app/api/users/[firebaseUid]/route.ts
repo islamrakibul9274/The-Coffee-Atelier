@@ -6,9 +6,10 @@ import { verifyAuthToken } from '@/lib/firebase/admin-actions';
 // GET /api/users/[firebaseUid] — retrieve a user by firebaseUid
 export async function GET(
   request: NextRequest,
-  { params }: { params: { firebaseUid: string } }
+  { params }: { params: Promise<{ firebaseUid: string }> }
 ) {
   try {
+    const { firebaseUid } = await params;
     const decoded = await verifyAuthToken(request);
     if (!decoded) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,11 +23,11 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (requestingUser.role !== 'admin' && decoded.uid !== params.firebaseUid) {
+    if (requestingUser.role !== 'admin' && decoded.uid !== firebaseUid) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const targetUser = await User.findOne({ firebaseUid: params.firebaseUid }).lean();
+    const targetUser = await User.findOne({ firebaseUid: firebaseUid }).lean();
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -41,9 +42,10 @@ export async function GET(
 // PUT /api/users/[firebaseUid] — update user profile
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { firebaseUid: string } }
+  { params }: { params: Promise<{ firebaseUid: string }> }
 ) {
   try {
+    const { firebaseUid } = await params;
     const decoded = await verifyAuthToken(request);
     if (!decoded) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -57,7 +59,7 @@ export async function PUT(
     }
 
     // Only allow self-update or admin update
-    if (requestingUser.role !== 'admin' && decoded.uid !== params.firebaseUid) {
+    if (requestingUser.role !== 'admin' && decoded.uid !== firebaseUid) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -74,9 +76,9 @@ export async function PUT(
     }
 
     const updatedUser = await User.findOneAndUpdate(
-      { firebaseUid: params.firebaseUid },
+      { firebaseUid: firebaseUid },
       { $set: allowedFields },
-      { new: true }
+      { new: true, runValidators: true }
     ).lean();
 
     if (!updatedUser) {

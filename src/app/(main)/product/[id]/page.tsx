@@ -36,19 +36,22 @@ export default function ProductDetailPage() {
   
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [productError, setProductError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProduct = useCallback(async () => {
+    setLoading(true); setProductError(false);
     try {
       const res = await fetch(`/api/products?productId=${id}`);
+      if (!res.ok) throw new Error("Product unavailable");
       const data = await res.json();
       const found = data.products?.find((p: any) => p._id === id) || data.product;
       setProduct(found || null);
     } catch (error) {
-      console.error("Fetch product error:", error);
-    }
+      setProductError(true);
+    } finally { setLoading(false); }
   }, [id]);
 
   const fetchReviews = useCallback(async () => {
@@ -58,8 +61,6 @@ export default function ProductDetailPage() {
       setReviews(data.reviews || []);
     } catch (error) {
       console.error("Fetch reviews error:", error);
-    } finally {
-      setLoading(false);
     }
   }, [id]);
 
@@ -122,7 +123,7 @@ export default function ProductDetailPage() {
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : null;
 
-  if (loading && !product) return (
+  if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-accent-gold"></div>
     </div>
@@ -130,7 +131,8 @@ export default function ProductDetailPage() {
 
   if (!product) return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background">
-      <h2 className="font-serif text-3xl text-foreground italic">Curated blend not found.</h2>
+      <h2 className="font-serif text-3xl text-foreground italic">{productError ? "This roast could not be loaded." : "Curated blend not found."}</h2>
+      {productError && <button onClick={fetchProduct} className="text-accent-gold underline">Try again</button>}
       <Link href="/" className="text-accent-gold text-[10px] font-bold uppercase tracking-[0.4em] flex items-center gap-3">
         <ArrowLeft className="w-4 h-4" /> Return to Collection
       </Link>
@@ -197,7 +199,7 @@ export default function ProductDetailPage() {
             {product.status === "active" ? (
               <button 
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={product.stock <= 0}
                 className="w-full sm:w-auto px-16 py-6 bg-accent-gold text-background text-[11px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-foreground transition-all duration-700 disabled:opacity-50"
               >
                 <ShoppingBag className="w-5 h-5 stroke-[1px]" />
@@ -238,6 +240,7 @@ export default function ProductDetailPage() {
                       {[1, 2, 3, 4, 5].map((s) => (
                         <button
                           key={s}
+                          aria-label={`Rate ${s} out of 5 stars`} aria-pressed={reviewForm.rating === s}
                           type="button"
                           onClick={() => setReviewForm({ ...reviewForm, rating: s })}
                           className={`p-3 transition-all duration-500 ${reviewForm.rating >= s ? "text-accent-gold bg-accent-gold/5" : "text-text-muted hover:text-foreground"}`}
@@ -249,7 +252,7 @@ export default function ProductDetailPage() {
                   </div>
                   <div>
                     <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.3em] mb-4 block">Narrative</label>
-                    <textarea 
+                    <textarea aria-label="Your review" maxLength={2000}
                       required
                       value={reviewForm.comment}
                       onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}

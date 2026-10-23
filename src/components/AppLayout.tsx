@@ -17,10 +17,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <a href="#main-content" className="fixed left-4 top-4 z-[200] -translate-y-24 focus:translate-y-0 bg-accent-gold text-background px-5 py-3 font-medium">Skip to content</a>
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
-        <main className={`flex-1 ${!isHome ? "pt-24 lg:pt-32" : ""} ${isDashboard ? "pb-20 lg:pb-0" : ""}`}>
+        <main id="main-content" tabIndex={-1} className={`min-w-0 flex-1 ${!isHome ? "pt-24 lg:pt-32" : ""} ${isDashboard ? "pb-20 lg:pb-0" : ""}`}>
           {children}
         </main>
       </div>

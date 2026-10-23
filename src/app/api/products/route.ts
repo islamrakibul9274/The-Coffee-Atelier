@@ -1,9 +1,20 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Product } from '@/lib/models/Product';
 import { User } from '@/lib/models/User';
 import { Category } from '@/lib/models/Category';
 import { verifyAuthToken } from '@/lib/firebase/admin-actions';
+
+const objectId = z.string().regex(/^[a-f\d]{24}$/i);
+const productInput = z.object({
+  name: z.string().trim().min(1).max(160), description: z.string().trim().min(1).max(5000),
+  category: objectId, basePrice: z.number().finite().min(0).max(100000),
+  stock: z.number().int().min(0).max(1000000).optional(),
+  status: z.enum(['active', 'coming_soon', 'out_of_stock']).optional(),
+  imageUrl: z.string().max(2000000).optional(),
+  comingSoonLaunchDate: z.string().refine(value => value === '' || Number.isFinite(Date.parse(value))).nullable().optional(),
+});
 
 // GET /api/products — public listing with filters
 export async function GET(request: NextRequest) {
@@ -15,13 +26,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const search = searchParams.get('search');
     const sort = searchParams.get('sort');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = Math.max(1, Math.min(500, Math.floor(Number(searchParams.get('limit')) || 50)));
+    if ((productId && !objectId.safeParse(productId).success) || (category && !objectId.safeParse(category).success)) {
+      return NextResponse.json({ error: 'Invalid product or category.' }, { status: 400 });
+    }
 
     const filter: any = {};
     if (productId) filter._id = productId;
     if (category) filter.category = category;
     if (status) filter.status = status;
-    if (search) filter.name = { $regex: search, $options: 'i' };
+    if (search) filter.name = { $regex: search.slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
 
     let query = Product.find(filter).populate('category', 'name slug').limit(limit);
 
@@ -49,7 +63,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const parsed = productInput.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid product fields." }, { status: 400 });
+    const body = parsed.data;
     const { name, description, category, basePrice, status, comingSoonLaunchDate, imageUrl, stock } = body;
 
     if (!name || !description || !category || basePrice === undefined) {
@@ -84,12 +100,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { productId, ...updates } = await request.json();
-    if (!productId) return NextResponse.json({ error: 'productId required' }, { status: 400 });
+    const { productId, ...body } = await request.json();
+    if (!objectId.safeParse(productId).success) return NextResponse.json({ error: 'Valid productId required' }, { status: 400 });
+    const parsed = productInput.partial().safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: 'Invalid product fields.' }, { status: 400 });
+    const updates: any = parsed.data;
 
     if (updates.comingSoonLaunchDate) updates.comingSoonLaunchDate = new Date(updates.comingSoonLaunchDate);
+    else if (updates.comingSoonLaunchDate !== undefined) updates.comingSoonLaunchDate = null;
 
-    const product = await Product.findByIdAndUpdate(productId, { $set: updates }, { new: true }).lean();
+    const product = await Product.findByIdAndUpdate(productId, { $set: updates }, { new: true, runValidators: true }).lean();
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
     return NextResponse.json({ product });
@@ -112,7 +132,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const productId = new URL(request.url).searchParams.get('productId');
-    if (!productId) return NextResponse.json({ error: 'productId required' }, { status: 400 });
+    if (!objectId.safeParse(productId).success) return NextResponse.json({ error: 'Valid productId required' }, { status: 400 });
 
     await Product.findByIdAndDelete(productId);
     return NextResponse.json({ message: 'Product deleted' });

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HeroSection from "@/components/landing/HeroSection";
 import OurStory from "@/components/landing/OurStory";
 import FlashDiscounts from "@/components/landing/FlashDiscounts";
@@ -17,7 +18,7 @@ export default function HomePage() {
       <FlashDiscounts />
 
       {/* 4. Dynamic Coffee Menu Grid */}
-      <MenuSection />
+      <Suspense fallback={<div className="min-h-80" aria-label="Loading collection" />}><MenuSection /></Suspense>
 
       {/* 5. FAQ Accordion */}
       <FAQSection />

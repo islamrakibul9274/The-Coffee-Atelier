@@ -24,12 +24,14 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       addItem: (newItem) => {
+        if (!newItem.id || !Number.isFinite(newItem.price) || newItem.price < 0 || !Number.isInteger(newItem.quantity) || newItem.quantity < 1) return;
+        newItem = { ...newItem, quantity: Math.min(99, newItem.quantity) };
         set((state) => {
           const existingItem = state.items.find((i) => i.id === newItem.id);
           if (existingItem) {
             return {
               items: state.items.map((i) =>
-                i.id === newItem.id ? { ...i, quantity: i.quantity + newItem.quantity } : i
+                i.id === newItem.id ? { ...i, quantity: Math.min(99, i.quantity + newItem.quantity) } : i
               ),
             };
           }
@@ -40,6 +42,8 @@ export const useCartStore = create<CartState>()(
         set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
       },
       updateQuantity: (id, quantity) => {
+        if (!Number.isInteger(quantity)) return;
+        quantity = Math.min(99, Math.max(1, quantity));
         set((state) => ({
           items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
         }));

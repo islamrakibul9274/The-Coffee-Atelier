@@ -4,22 +4,24 @@ import { useActiveBanner } from "@/hooks/useFirebaseRealtime";
 import { motion } from "framer-motion";
 
 export default function HeroSection() {
-  const { banner, loading } = useActiveBanner();
+  const { banner } = useActiveBanner();
 
   return (
-    <section className="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden bg-background">
+    <section className="relative min-h-[700px] min-h-[100svh] py-36 flex flex-col items-center justify-center text-center px-6 overflow-hidden bg-background">
       {/* Background Image - Atmospheric & Warm */}
-      {banner?.imageUrl && (
+      {(
+
         <motion.div 
-          key={banner.imageUrl}
+          key={banner?.imageUrl || "atelier"}
           initial={{ scale: 1.05, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.4 }}
           transition={{ duration: 2.5, ease: "easeOut" }}
           className="absolute inset-0 z-0"
         >
           <img
-            src={banner.imageUrl}
-            alt="Hero Banner"
+            src={banner?.imageUrl || "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1920&q=85"}
+            alt=""
+            fetchPriority="high"
             className="w-full h-full object-cover grayscale brightness-[0.7]"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background opacity-60" />
@@ -36,35 +38,33 @@ export default function HeroSection() {
         transition={{ duration: 1.5, ease: "easeOut" }}
         className="relative z-20 max-w-5xl"
       >
-        <span className="text-accent-gold text-[10px] font-bold tracking-[0.6em] uppercase mb-12 inline-block">
+        <span className="text-accent-gold text-[10px] font-bold tracking-[0.35em] sm:tracking-[0.6em] uppercase mb-8 sm:mb-12 inline-block">
           Artisanal Roastery & Atelier
         </span>
         
-        <h1 className="font-serif text-5xl sm:text-6xl md:text-9xl text-foreground tracking-tighter leading-[0.85] mb-10 md:mb-16">
+        <h1 className="font-serif text-5xl min-[400px]:text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground tracking-tighter leading-[0.85] mb-10 md:mb-16">
           THE ART OF
           <br />
           <span className="italic font-normal text-accent-gold">fine coffee.</span>
         </h1>
         
-        <p className="text-text-muted max-w-md mx-auto text-sm md:text-base mb-20 font-medium leading-relaxed italic">
+        <p className="text-text-muted max-w-md mx-auto text-sm md:text-base mb-10 sm:mb-14 font-medium leading-relaxed italic">
           Experience the profound depth of slow-roasted specialty beans, curated for the true connoisseur.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 justify-center items-center">
-          <button
-            onClick={() => document.getElementById("menu-grid")?.scrollIntoView({ behavior: "smooth" })}
+          <a href="#menu-grid"
             className="group relative px-10 sm:px-14 py-5 sm:py-6 bg-accent-gold text-background text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.3em] transition-all duration-500 overflow-hidden"
           >
             <span className="relative z-10">The Collection</span>
             <div className="absolute inset-0 bg-foreground translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          </button>
+          </a>
           
-          <button
-            onClick={() => document.getElementById("our-story")?.scrollIntoView({ behavior: "smooth" })}
+          <a href="#our-story"
             className="text-[11px] font-bold uppercase tracking-[0.3em] text-foreground/70 hover:text-accent-gold transition-all duration-500 border-b border-accent-gold/20 pb-2"
           >
             Our Narrative
-          </button>
+          </a>
         </div>
       </motion.div>
 

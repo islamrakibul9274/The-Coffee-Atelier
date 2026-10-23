@@ -18,8 +18,12 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Choose a JPG, PNG, WebP or GIF image under 5 MB.' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -28,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Upload to Cloudinary
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: 'coffee-atelier' },
+        { folder: 'coffee-atelier', resource_type: 'image' },
         (error, result) => {
           if (error) reject(error);
           else resolve(result);

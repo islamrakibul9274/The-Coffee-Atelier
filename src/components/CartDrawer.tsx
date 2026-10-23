@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight, Sparkles } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartStore, CartItem } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getClientToken } from "@/lib/firebase/client-utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useDialog } from "@/hooks/useDialog";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -21,12 +22,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
 
+  const dialogRef = useDialog(isOpen, onClose);
+
   // Handle hydration to prevent SSR mismatch and ensure persistence works
   useEffect(() => {
     setHasHydrated(true);
   }, []);
 
   const handleCheckout = async () => {
+    if (loading || items.length === 0) return;
     if (!user) {
       toast.error("PLEASE SIGN IN TO COMPLETE YOUR COLLECTION.");
       return;
@@ -34,6 +38,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     setLoading(true);
     try {
       const token = await getClientToken();
+      if (!token) throw new Error("Please sign in again to check out.");
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -80,7 +85,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-background border-l border-cardBorder shadow-2xl z-[101] flex flex-col"
+            ref={dialogRef} role="dialog" aria-modal="true" aria-label="Your collection" tabIndex={-1}
+            className="fixed top-0 right-0 h-[100dvh] w-full max-w-md bg-background border-l border-cardBorder shadow-2xl z-[101] flex flex-col"
           >
             {/* Header */}
             <div className="px-6 sm:px-10 py-6 sm:py-10 border-b border-cardBorder flex items-center justify-between bg-card">
@@ -88,7 +94,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <ShoppingBag className="w-5 h-5 text-accent-gold stroke-[1px]" />
                 <h2 className="font-serif text-xl sm:text-2xl text-foreground italic">Your Collection</h2>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-background rounded-full transition-colors">
+              <button aria-label="Close cart" onClick={onClose} className="p-2 hover:bg-background rounded-full transition-colors">
                 <X className="w-6 h-6 text-foreground stroke-[1px]" />
               </button>
             </div>
@@ -120,7 +126,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <div>
                         <div className="flex justify-between items-start mb-1 sm:mb-2">
                           <h3 className="font-serif text-lg sm:text-xl text-foreground leading-tight truncate pr-4 group-hover:text-accent-gold transition-colors">{item.name}</h3>
-                          <button onClick={() => removeItem(item.id)} className="text-text-muted hover:text-red-400 transition-colors">
+                          <button aria-label={`Remove ${item.name}`} onClick={() => removeItem(item.id)} className="text-text-muted hover:text-red-400 transition-colors">
                             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1px]" />
                           </button>
                         </div>
@@ -128,11 +134,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
 
                       <div className="flex items-center border border-cardBorder w-fit mt-2 sm:mt-0">
-                        <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} className="p-1.5 sm:p-2 hover:bg-card transition-colors">
+                        <button aria-label={`Decrease quantity of ${item.name}`} disabled={item.quantity <= 1} onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))} className="p-1.5 sm:p-2 hover:bg-card transition-colors">
                           <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
                         </button>
                         <span className="w-8 sm:w-10 text-center text-[10px] sm:text-xs font-bold tabular-nums text-foreground">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 sm:p-2 hover:bg-card transition-colors">
+                        <button aria-label={`Increase quantity of ${item.name}`} disabled={item.quantity >= 99} onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 sm:p-2 hover:bg-card transition-colors">
                           <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-text-muted" />
                         </button>
                       </div>
@@ -167,14 +173,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   )}
                 </button>
 
-                <Link
-                  href="/order/demo-payment"
-                  onClick={onClose}
-                  className="w-full mt-4 py-4 border border-cardBorder text-foreground text-[9px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-card transition-all duration-500"
-                >
-                  <Sparkles className="w-4 h-4 text-accent-gold" />
-                  USE DEMO ACQUISITION
-                </Link>
+                {!user && <Link href="/login" onClick={onClose} className="block mt-4 py-3 text-center text-sm text-accent-gold underline underline-offset-4">Sign in to check out</Link>}
+                <p className="text-center mt-4 text-xs text-text-muted">Secure payment through Stripe. The best eligible offer is applied at checkout.</p>
                 <p className="text-center mt-8 text-[9px] font-medium text-text-muted uppercase tracking-[0.3em] italic">
                   Curated exclusively by The Coffee Atelier
                 </p>

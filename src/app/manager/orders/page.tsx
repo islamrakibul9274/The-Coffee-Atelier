@@ -14,6 +14,7 @@ interface Order {
   firebaseUid: string;
   finalTotal: number;
   deliveryStatus: string;
+  fulfillmentNeedsReview?: boolean;
   createdAt: string;
   items: { product: string; quantity: number; priceAtPurchase: number }[];
 }
@@ -30,7 +31,7 @@ export default function ManagerOrdersPage() {
   const fetchOrders = useCallback(async () => {
     try {
       const token = await getClientToken();
-      const params = new URLSearchParams({ limit: "50" });
+      const params = new URLSearchParams({ limit: "50", view: "global" });
       if (filter) params.set("status", filter);
       const res = await fetch(`/api/orders?${params}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
@@ -55,11 +56,12 @@ export default function ManagerOrdersPage() {
   const updateStatus = async (orderId: string, deliveryStatus: string) => {
     try {
       const token = await getClientToken();
-      await fetch("/api/orders", {
+      const response = await fetch("/api/orders", {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ orderId, deliveryStatus }),
       });
+      if (!response.ok) throw new Error("Update failed");
       toast.success(`→ ${deliveryStatus}`);
       fetchOrders();
     } catch { toast.error("Update failed."); }
@@ -130,6 +132,7 @@ export default function ManagerOrdersPage() {
                       <span className="text-sm font-medium text-text-primary">#{o._id.slice(-6).toUpperCase()}</span>
                       <span className={`text-xs font-medium ${colors[o.deliveryStatus]}`}>{o.deliveryStatus}</span>
                     </div>
+                    {o.fulfillmentNeedsReview && <p className="text-xs text-amber-300 my-1">Inventory changed during payment. Review stock before shipping.</p>}
                     <p className="text-xs text-text-secondary">
                       {o.items.length} item{o.items.length !== 1 && "s"} · ${o.finalTotal.toFixed(2)} · {new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </p>

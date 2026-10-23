@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,7 +37,7 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-20 md:py-60 px-6 bg-background relative overflow-hidden">
+    <section id="questions" className="py-20 md:py-60 px-6 bg-background relative overflow-hidden">
       {/* Decorative vertical line */}
       <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-accent-gold/5 hidden lg:block" />
 
@@ -44,7 +45,7 @@ export default function FAQSection() {
         <div className="flex flex-col lg:flex-row items-start gap-16 md:gap-32 lg:gap-0">
           
           {/* Left: Heading Content */}
-          <div className="lg:w-1/2 lg:pr-20 sticky top-40">
+          <div className="lg:w-1/2 lg:pr-20 lg:sticky lg:top-40">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -75,6 +76,9 @@ export default function FAQSection() {
               {faqs.map((faq, i) => (
                 <div key={i} className="border-b border-cardBorder group">
                   <button
+                    aria-expanded={openIndex === i}
+                    aria-controls={`faq-answer-${i}`}
+                    id={`faq-question-${i}`}
                     onClick={() => setOpenIndex(openIndex === i ? null : i)}
                     className="w-full flex items-start justify-between py-8 md:py-12 text-left transition-all duration-700"
                   >
@@ -102,6 +106,7 @@ export default function FAQSection() {
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
+                        id={`faq-answer-${i}`} role="region" aria-labelledby={`faq-question-${i}`}
                         className="overflow-hidden"
                       >
                         <div className="pl-14 md:pl-[120px] pb-12 md:pb-16 pr-6 md:pr-10">
@@ -123,9 +128,9 @@ export default function FAQSection() {
               className="mt-20 pt-20 border-t border-accent-gold/10"
             >
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.4em] mb-6">Still curious?</p>
-              <button className="text-accent-gold hover:text-foreground transition-colors text-sm italic font-serif border-b border-accent-gold pb-1">
-                Direct Inquiries →
-              </button>
+              <Link href="/#menu-grid" className="text-accent-gold hover:text-foreground transition-colors text-sm italic font-serif border-b border-accent-gold pb-1">
+                Explore the collection →
+              </Link>
             </motion.div>
           </div>
         </div>

@@ -15,6 +15,7 @@ interface Order {
   finalTotal: number;
   status: string;
   deliveryStatus: string;
+  fulfillmentNeedsReview?: boolean;
   createdAt: string;
   items: { product: string; quantity: number; priceAtPurchase: number }[];
 }
@@ -136,6 +137,7 @@ export default function AdminOrdersPage() {
                           <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${statusColors[o.deliveryStatus]}`}>
                             <Icon className="w-4 h-4" /> {o.deliveryStatus}
                           </span>
+                          {o.fulfillmentNeedsReview && <p className="text-xs text-amber-300 mt-1">Inventory review needed</p>}
                         </td>
                         <td className="px-5 py-4 text-sm text-text-secondary">{new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
                         <td className="px-5 py-4">

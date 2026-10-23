@@ -92,7 +92,8 @@ export default function ManagerProductsPage() {
   const handleDelete = async (id: string) => {
     try {
       const token = await getClientToken();
-      await fetch(`/api/products?productId=${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      const response = await fetch(`/api/products?productId=${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) throw new Error("Delete failed");
       toast.success("Product deleted."); fetchProducts();
     } catch { toast.error("Could not delete."); }
   };

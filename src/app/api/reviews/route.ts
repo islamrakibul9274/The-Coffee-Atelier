@@ -1,3 +1,4 @@
+import { isValidObjectId } from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Review } from '@/lib/models/Engagement';
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
     const firebaseUid = searchParams.get('firebaseUid');
 
     let filter: any = {};
+    if (productId && !isValidObjectId(productId)) return NextResponse.json({ error: 'Invalid product.' }, { status: 400 });
     if (productId) filter.productId = productId;
     if (firebaseUid) filter.firebaseUid = firebaseUid;
 
@@ -42,9 +44,11 @@ export async function POST(request: NextRequest) {
 
     const { productId, rating, comment } = await request.json();
 
-    if (!productId || !rating || rating < 1 || rating > 5) {
+    if (!isValidObjectId(productId) || !Number.isInteger(rating) || rating < 1 || rating > 5 || typeof comment !== 'string' || !comment.trim() || comment.length > 2000) {
       return NextResponse.json({ error: 'productId and rating (1-5) are required' }, { status: 400 });
     }
+
+    if (!await Product.exists({ _id: productId })) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
     // Check if user already reviewed this product
     const existing = await Review.findOne({ productId, firebaseUid: decoded.uid });
@@ -56,7 +60,7 @@ export async function POST(request: NextRequest) {
       productId,
       firebaseUid: decoded.uid,
       rating,
-      comment: comment || '',
+      comment: comment.trim(),
     });
     await review.save();
 
@@ -79,7 +83,7 @@ export async function PUT(request: NextRequest) {
 
     const { reviewId, rating, comment } = await request.json();
 
-    if (!reviewId) {
+    if (!isValidObjectId(reviewId)) {
       return NextResponse.json({ error: 'reviewId is required' }, { status: 400 });
     }
 
@@ -93,14 +97,15 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    if ((rating !== undefined && (!Number.isInteger(rating) || rating < 1 || rating > 5)) || (comment !== undefined && (typeof comment !== 'string' || !comment.trim() || comment.length > 2000))) return NextResponse.json({ error: 'Provide a rating from 1 to 5 and a review under 2000 characters.' }, { status: 400 });
     const updates: any = {};
     if (rating !== undefined && rating >= 1 && rating <= 5) updates.rating = rating;
-    if (comment !== undefined) updates.comment = comment;
+    if (comment !== undefined) updates.comment = comment.trim();
 
     const updatedReview = await Review.findByIdAndUpdate(
       reviewId,
       { $set: updates },
-      { new: true }
+      { new: true, runValidators: true }
     ).lean();
 
     return NextResponse.json({ review: updatedReview });
@@ -123,7 +128,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const reviewId = searchParams.get('reviewId');
 
-    if (!reviewId) {
+    if (!isValidObjectId(reviewId)) {
       return NextResponse.json({ error: 'reviewId is required' }, { status: 400 });
     }
 

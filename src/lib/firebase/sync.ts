@@ -49,6 +49,9 @@ export async function syncActiveDiscounts() {
       value: discount.value,
       appliesTo: discount.appliesTo,
       endDate: discount.endDate ? discount.endDate.toISOString() : null,
+      startDate: discount.startDate ? discount.startDate.toISOString() : null,
+      isActive: discount.isActive,
+      repeatWeekly: discount.repeatWeekly,
     };
     return acc;
   }, {} as Record<string, any>);

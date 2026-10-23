@@ -108,3 +108,27 @@ select option:hover {
 }
 
 
+
+/* Readable typography, reliable anchors, and keyboard navigation. */
+:root {
+  --font-inter: 'Inter';
+  --font-playfair: 'Playfair Display';
+}
+html { scroll-padding-top: 6rem; }
+body { overflow-x: clip; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:disabled { cursor: not-allowed; }
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #C0A080 !important;
+  outline-offset: 5px;
+}
+::selection { background: #C0A080; color: #0F0D0C; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

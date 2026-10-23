@@ -36,7 +36,6 @@ export default function MobileBottomNav() {
   const managerLinks = [
     { label: "Products", href: "/manager/products", icon: Package },
     { label: "Orders", href: "/manager/orders", icon: ShoppingBag },
-    { label: "Promos", href: "/manager/discounts", icon: Tags },
   ];
 
   const personalLinks = [
@@ -55,7 +54,7 @@ export default function MobileBottomNav() {
   const links = [...managementLinks, ...personalLinks];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-cardBorder lg:hidden">
+    <nav aria-label="Account navigation" className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-cardBorder lg:hidden">
       <div className="flex items-center justify-around px-1 py-2 overflow-x-auto no-scrollbar">
         {links.map((link) => {
           const Icon = link.icon;
@@ -63,6 +62,7 @@ export default function MobileBottomNav() {
           return (
             <Link
               key={link.href}
+              aria-current={isActive ? "page" : undefined}
               href={link.href}
               className={`flex flex-col items-center gap-1 px-2 py-1.5 min-w-[56px] rounded-lg transition-colors ${
                 isActive

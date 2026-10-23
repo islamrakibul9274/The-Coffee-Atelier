@@ -13,6 +13,7 @@ export interface ProductProps {
   basePrice: number;
   imageUrl?: string;
   status?: string;
+  stock?: number;
 }
 
 export default function ProductCard({ product }: { product: ProductProps }) {
@@ -21,6 +22,7 @@ export default function ProductCard({ product }: { product: ProductProps }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (product.status !== "active" || product.stock === 0) return;
     addItem({
       id: product._id,
       name: product.name,
@@ -40,13 +42,15 @@ export default function ProductCard({ product }: { product: ProductProps }) {
       className="group flex flex-col"
     >
       {/* Image Wrapper */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-card border border-cardBorder mb-10">
+      <div className="relative aspect-[4/5] overflow-hidden bg-card border border-cardBorder mb-6">
         <Link href={`/product/${product._id}`} className="block w-full h-full">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
               alt={product.name}
+              loading="lazy" decoding="async"
               onError={(e) => {
+                e.currentTarget.onerror = null;
                 (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=800";
               }}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter grayscale-[0.4] brightness-75 group-hover:grayscale-0 group-hover:brightness-100"
@@ -59,18 +63,20 @@ export default function ProductCard({ product }: { product: ProductProps }) {
         </Link>
         
         {/* Hover Action */}
-        <div className="absolute inset-0 bg-background/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 bg-background/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity duration-700 flex items-center justify-center pointer-events-none">
           <div className="flex gap-4 pointer-events-auto">
             <Link
               href={`/product/${product._id}`}
               className="w-14 h-14 bg-background text-foreground border border-cardBorder rounded-full flex items-center justify-center shadow-2xl scale-90 hover:scale-100 transition-all duration-700 hover:bg-accent-gold hover:text-background"
-              title="View Details"
+              title="View Details" aria-label={`View ${product.name}`}
             >
               <Eye className="w-6 h-6 stroke-[1px]" />
             </Link>
             <button
               onClick={handleAddToCart}
-              className="w-14 h-14 bg-foreground text-background rounded-full flex items-center justify-center shadow-2xl scale-90 hover:scale-100 transition-all duration-700 hover:bg-accent-gold"
+              disabled={product.status !== "active" || product.stock === 0}
+              aria-label={`Add ${product.name} to cart`}
+              className="disabled:opacity-40 w-14 h-14 bg-foreground text-background rounded-full flex items-center justify-center shadow-2xl scale-90 hover:scale-100 transition-all duration-700 hover:bg-accent-gold"
               title="Add to Collection"
             >
               <Plus className="w-6 h-6 stroke-[1px]" />

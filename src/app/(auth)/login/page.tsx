@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-6 bg-background">
-      <div className="w-full max-w-md p-12 bg-card border border-cardBorder shadow-2xl">
+      <div className="w-full max-w-md p-6 sm:p-12 bg-card border border-cardBorder shadow-2xl">
         <div className="mb-10 text-center">
           <Link href="/" className="inline-block mb-8">
             <span className="font-serif text-2xl text-foreground tracking-tighter">THE COFFEE ATELIER</span>
@@ -57,9 +57,10 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-gold">Email Address</label>
+            <label htmlFor="email" className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-gold">Email Address</label>
             <input
               {...register("email")}
+              id="email" autoComplete="email"
               type="email"
               className="w-full px-4 py-4 bg-background border border-cardBorder text-foreground focus:border-accent-gold outline-none transition-all placeholder:text-text-muted/30"
               placeholder="atelier@example.com"
@@ -68,9 +69,10 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-gold">Password</label>
+            <label htmlFor="password" className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-gold">Password</label>
             <input
               {...register("password")}
+              id="password" autoComplete="current-password"
               type="password"
               className="w-full px-4 py-4 bg-background border border-cardBorder text-foreground focus:border-accent-gold outline-none transition-all placeholder:text-text-muted/30"
               placeholder="••••••••"

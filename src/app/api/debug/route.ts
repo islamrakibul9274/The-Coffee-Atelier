@@ -1,15 +1,6 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { Order } from '@/lib/models/Order';
 
-export const dynamic = 'force-dynamic';
-
+// Diagnostics must never publish customer orders or stack traces.
 export async function GET() {
-  try {
-    await dbConnect();
-    const orders = await Order.find({}).lean();
-    return NextResponse.json({ count: orders.length, orders });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message, stack: error.stack });
-  }
+  return NextResponse.json({ error: 'Not found' }, { status: 404 });
 }
